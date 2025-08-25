@@ -1,0 +1,44 @@
+' ====== VARIÁVEIS PÚBLICAS ======
+' Variáveis públicas usadas para armazenar leituras
+Public LoggerTemp, BattV
+Public FTPResult  ' <- Adicionada para armazenar o status do envio FTP (sugestão do especialista)
+
+' ====== TABELA DE DADOS ======
+' Tabela para armazenar os dados que serão exportados
+' O especialista recomendou reduzir o intervalo durante testes (ex: 10s) para facilitar debug
+
+DataTable(FTPData,1,-1)
+  DataInterval(0,10,Sec,10)         ' <- Alterado de 60 Min para 10 Seg para testes
+  Minimum(1,BattV,FP2,False,False)
+  Average(1,LoggerTemp,FP2,False)
+EndTable
+
+' ====== PROGRAMA PRINCIPAL ======
+BeginProg
+
+  ' O especialista sugeriu não usar COMRS232 para envio de dados se ela estiver sendo usada para configuração
+  ' Portanto, neste código NÃO usamos mais SerialOutBlock nem SerialOpen
+  ' Foco aqui é usar FTPClient para envio periódico para a Raspberry Pi
+
+  ' ===== SCAN PRINCIPAL: coleta dos dados =====
+  Scan(10,Sec,0,0)                  ' <- Alterado de 60 Min para 10 Seg para testes
+    PanelTemp(LoggerTemp,250)
+    Battery(BattV)
+    CallTable FTPData
+  NextScan
+
+  ' ===== SEQUÊNCIA LENTA: envio via FTP =====
+  ' Sugestão do especialista: usar FTPClient para envio de arquivos estruturados
+  SlowSequence
+    ' FTPClient: envia a tabela FTPData em formato CSV para um servidor FTP
+    FTPResult = FTPClient(
+      "192.168.1.100",        ' <- IP da Raspberry Pi atuando como servidor FTP
+      "datalogger",           ' <- Nome de usuário FTP da Raspberry
+      "senha123",             ' <- Senha FTP
+      "FTPData",              ' <- Nome da tabela definida acima
+      "data_logger.csv",      ' <- Nome do arquivo CSV gerado na Raspberry
+      9, 0,                   ' <- Modo append (9 = append if exists)
+      10, Sec,                ' <- Frequência de envio (igual à do DataInterval durante testes)
+      -1008                   ' <- Formato: CSV com cabeçalho
+    )
+EndProg
