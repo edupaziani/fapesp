@@ -58,7 +58,7 @@ HardwareSerial gpsSerial(2);
 
 
 #define RX_TIMEOUT_VALUE                            1000
-#define BUFFER_SIZE                                 40 // Define the payload size here
+#define BUFFER_SIZE                                 30 // Define the payload size here
 
 char txpacket[BUFFER_SIZE];
 char rxpacket[BUFFER_SIZE];
@@ -159,7 +159,7 @@ void loop(){
           txNumber++;
           //sprintf(txpacket,"hello %d, Rssi : %d",txNumber,Rssi);
           //alteração a partir daqui
-          snprintf(txpacket,BUFFER_SIZE, "Pacote #%d, %f, %f, %d",  txNumber, latitude, longitude, RSSI);
+          snprintf(txpacket,BUFFER_SIZE, "Pacote #%d, %f, %f, %d",  txNumber, latitude, longitude, Rssi);
           //LoRa.beginPacket();
           //LoRa.print(txpacket);
           //LoRa.endPacket();
