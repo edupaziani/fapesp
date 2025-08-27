@@ -160,10 +160,10 @@ void loop(){
           //sprintf(txpacket,"hello %d, Rssi : %d",txNumber,Rssi);
           //alteração a partir daqui
           snprintf(txpacket,BUFFER_SIZE, "Pacote #%d, %f, %f, %d",  txNumber, latitude, longitude, RSSI);
-          LoRa.beginPacket();
-          LoRa.print(txpacket);
-          LoRa.endPacket();
-          Serial.println(packet);
+          //LoRa.beginPacket();
+          //LoRa.print(txpacket);
+          //LoRa.endPacket();
+          //Serial.println(packet);
           //Serial.printf("\r\nsending packet \"%s\" , length %d\r\n",txpacket, strlen(txpacket));
           Serial.printf("\r\nsending packet \"%s\"",txpacket);
 
