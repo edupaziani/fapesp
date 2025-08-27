@@ -58,7 +58,7 @@ HardwareSerial gpsSerial(2);
 
 
 #define RX_TIMEOUT_VALUE                            1000
-#define BUFFER_SIZE                                 40 // Define the payload size here
+#define BUFFER_SIZE                                 64 // Define the payload size here
 
 char txpacket[BUFFER_SIZE];
 char rxpacket[BUFFER_SIZE];
@@ -159,7 +159,7 @@ void loop(){
           txNumber++;
           //sprintf(txpacket,"hello %d, Rssi : %d",txNumber,Rssi);
           //alteração a partir daqui
-          snprintf(txpacket,BUFFER_SIZE, "Pacote #%d, %f, %f, %d",  txNumber, latitude, longitude, RSSI);
+          snprintf(txpacket,BUFFER_SIZE, "Pacote #%d, %f, %f, %d",  txNumber, latitude, longitude, Rssi);
           //LoRa.beginPacket();
           //LoRa.print(txpacket);
           //LoRa.endPacket();
@@ -231,8 +231,9 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     Rssi=rssi;
     Snr = snr;
     rxSize=size;
-    memcpy(rxpacket, payload, size );
-    rxpacket[size]='\0';
+    uint16_t len = size < (BUFFER_SIZE - 1) ? size : (BUFFER_SIZE - 1);
+    memcpy(rxpacket, payload, len );
+    rxpacket[len]='\0';
     Radio.Sleep( );
 
     Serial.printf("\r\nreceived packet \"%s\" with Rssi %d , length %d\r\n",rxpacket,Rssi,rxSize);

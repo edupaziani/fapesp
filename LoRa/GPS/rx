@@ -40,7 +40,7 @@ HardwareSerial gpsSerial(2);
 
 
 #define RX_TIMEOUT_VALUE                            1000
-#define BUFFER_SIZE                                 30 // Define the payload size here
+#define BUFFER_SIZE                                 64 // Define the payload size here
 
 char txpacket[BUFFER_SIZE];
 char rxpacket[BUFFER_SIZE];
@@ -137,9 +137,8 @@ void loop(){
         case STATE_TX:
           delay(1000);
           txNumber++;
-          //sprintf(txpacket,"hello %d, Rssi : %d",txNumber,Rssi);
-          snprintf(txpacket, BUFFER_SIZE, "%.6f,%.6f, \nPacket # %d", latitude, longitude, txNumber);
-          //Serial.printf("\r\nsending packet \"%s\" , length %d\r\n",txpacket, strlen(txpacket));
+          // keep ping-pong behavior but simplify payload for readability
+          snprintf(txpacket, BUFFER_SIZE, "PING,%d", txNumber);
           Radio.Send( (uint8_t *)txpacket, strlen(txpacket) );
           display.drawString(0, 0, "TX mode");
           display.drawString(0, 25, "Sending package # ");
@@ -151,7 +150,7 @@ void loop(){
           
           break;
         case STATE_RX:
-          //Serial.println("into RX mode");
+          // enter RX mode and print concise status
           Radio.Rx( 0 );
           state=LOWPOWER;
 
@@ -193,12 +192,13 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     Rssi=rssi;
     Snr = snr;
     rxSize=size;
-    memcpy(rxpacket, payload, size );
-    rxpacket[size]='\0';
+    uint16_t len = size < (BUFFER_SIZE - 1) ? size : (BUFFER_SIZE - 1);
+    memcpy(rxpacket, payload, len );
+    rxpacket[len]='\0';
     Radio.Sleep( );
 
-    Serial.printf("\r\nreceived packet \"%s\" with Rssi %d , length %d\r\n",rxpacket,Rssi,rxSize);
-    //Serial.println("wait to send next packet");
+    // concise single-line CSV for Putty
+    Serial.printf("RX,%d,%d,%s\n", Rssi, Snr, rxpacket);
 
     state=STATE_TX;
 }
