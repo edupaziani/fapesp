@@ -63,7 +63,7 @@ typedef enum
     STATE_TX
 }States_t;
 
-int16_t txNumber;
+int16_t txNumber, rxNumber;
 States_t state;
 bool sleepMode = false;
 int16_t Rssi,rxSize,Snr;
@@ -164,7 +164,7 @@ void loop(){
           //Informação e disposição dos dados recebidos no OLED
           display.drawString(0, 0, "RX mode");
           display.drawString(50, 0, "Package #");
-          display.drawString(100, 0, String(rxpacket));
+          display.drawString(100, 0, String(rxNumber));
 
           display.drawString(0, 20, "RSSI = ");
           display.drawString(40, 20, String(Rssi));
@@ -214,6 +214,8 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr )
     memcpy(rxpacket, payload, size );
     rxpacket[size]='\0';
     Radio.Sleep( );
+
+    sscanf(rxpacket, "Pacote #%d, %*f, %*f, %*d", &rxNumber);
 
     //Print no monitor serial dos dados do pacote rx, isso aqui será o cerne dos dados salvos a serem analisados pós teste
     Serial.printf("\r\nReceived packet \"%s\" with Rssi %d \r\n",rxpacket,Rssi);
